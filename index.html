@@ -1,0 +1,656 @@
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&display=swap');
+  @import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css');
+
+  :root {
+    --bg-dark: #070b12;
+    --panel-bg: rgba(18, 26, 43, 0.95);
+    --glass-border: rgba(255, 255, 255, 0.12);
+    --accent-cyan: #00f2fe;
+    --accent-blue: #4facfe;
+    --accent-green: #00e676;
+    --accent-red: #ff3d71;
+    --accent-orange: #ffaa00;
+    --text-main: #f0f6fc;
+    --text-muted: #8b949e;
+    font-family: 'Tajawal', sans-serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; direction: ltr; text-align: left; }
+
+  body {
+    background-color: var(--bg-dark);
+    color: var(--text-main);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+
+  .app-container {
+    position: relative;
+    width: 100%;
+    max-width: 1100px;
+    min-height: 720px;
+    background: var(--panel-bg);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid var(--glass-border);
+    border-radius: 28px;
+    padding: 30px;
+    box-shadow: 0 30px 60px rgba(0, 0, 0, 0.8), inset 0 1px 0 rgba(255, 255, 255, 0.15);
+    overflow: hidden;
+  }
+
+  .glow-orb { position: absolute; border-radius: 50%; filter: blur(90px); z-index: 0; pointer-events: none; }
+  .orb-1 { width: 300px; height: 300px; background: rgba(0, 242, 254, 0.15); top: -80px; right: -80px; }
+  .orb-2 { width: 250px; height: 250px; background: rgba(255, 61, 113, 0.1); bottom: -80px; left: -80px; }
+
+  .app-header {
+    position: relative; z-index: 2;
+    display: flex; justify-content: space-between; align-items: center;
+    padding-bottom: 18px; border-bottom: 1px solid var(--glass-border); margin-bottom: 25px;
+  }
+
+  .brand { display: flex; align-items: center; gap: 15px; }
+  .brand-icon {
+    width: 45px; height: 45px; background: linear-gradient(135deg, var(--accent-cyan), var(--accent-blue));
+    border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 22px; color: #000;
+    box-shadow: 0 0 15px rgba(0, 242, 254, 0.4);
+  }
+  .brand-text h1 { font-size: 20px; font-weight: 800; color: #fff; }
+  .brand-text h1 span { color: var(--accent-cyan); font-size: 14px; }
+  .brand-text p { font-size: 11px; color: var(--text-muted); }
+
+  .system-status {
+    display: flex; align-items: center; gap: 8px; background: rgba(255, 255, 255, 0.04);
+    padding: 6px 14px; border-radius: 20px; border: 1px solid var(--glass-border);
+    font-size: 11px; font-weight: 700; color: var(--accent-green);
+  }
+  .pulse-dot { width: 7px; height: 7px; background: var(--accent-green); border-radius: 50%; box-shadow: 0 0 8px var(--accent-green); }
+
+  .screen-card { display: none; position: relative; z-index: 2; opacity: 0; transform: translateY(15px); transition: all 0.4s ease; }
+  .screen-card.active { display: block; opacity: 1; transform: translateY(0); }
+
+  .single-col { max-width: 750px; margin: 0 auto; text-align: left; }
+  .hero-icon-wrapper {
+    width: 80px; height: 80px; margin: 0 auto 20px; background: rgba(0, 242, 254, 0.08);
+    border: 1px solid var(--accent-cyan); border-radius: 50%; display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 0 25px rgba(0, 242, 254, 0.2);
+  }
+  .hero-icon { font-size: 35px; color: var(--accent-cyan); }
+  .single-col h2 { font-size: 24px; font-weight: 800; color: #fff; margin-bottom: 12px; }
+  .hero-subtitle { color: var(--text-muted); font-size: 14px; margin-bottom: 25px; line-height: 1.6; }
+
+  .features-grid { display: flex; justify-content: center; gap: 12px; margin-bottom: 30px; flex-wrap: wrap; }
+  .f-item { background: rgba(255, 255, 255, 0.03); border: 1px solid var(--glass-border); padding: 10px 16px; border-radius: 10px; font-size: 12px; color: var(--accent-cyan); }
+
+  .instruction-badge {
+    display: inline-flex; align-items: center; gap: 8px; background: rgba(0, 242, 254, 0.1);
+    border: 1px solid var(--accent-cyan); padding: 6px 14px; border-radius: 20px; font-size: 12px; color: var(--accent-cyan); font-weight: 700; margin-bottom: 15px;
+  }
+  .rules-list { display: flex; flex-direction: column; gap: 12px; margin-bottom: 30px; }
+  .rule-box { display: flex; align-items: center; gap: 15px; background: rgba(255, 255, 255, 0.03); border: 1px solid var(--glass-border); padding: 14px 18px; border-radius: 14px; }
+  .warning-box { border-color: rgba(255, 170, 0, 0.4); background: rgba(255, 170, 0, 0.06); }
+  .warning-box .r-num { color: var(--accent-orange); }
+  .r-num { font-size: 18px; font-weight: 900; color: var(--accent-cyan); min-width: 30px; text-align: center; }
+  .r-txt { font-size: 13px; color: var(--text-main); line-height: 1.4; }
+  .r-txt strong { color: var(--accent-cyan); }
+
+  /* Split View */
+  .split-view { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  .view-panel { background: rgba(10, 16, 28, 0.85); border: 1px solid var(--glass-border); border-radius: 20px; padding: 16px; position: relative; }
+  .panel-tag { display: inline-flex; align-items: center; gap: 8px; background: rgba(255, 255, 255, 0.05); padding: 5px 12px; border-radius: 15px; font-size: 11px; color: var(--accent-cyan); margin-bottom: 10px; }
+
+  .live-clock-badge {
+    display: flex; justify-content: space-between; align-items: center;
+    background: rgba(0, 242, 254, 0.08); border: 1px solid rgba(0, 242, 254, 0.3);
+    padding: 6px 12px; border-radius: 10px; margin-bottom: 10px; font-size: 12px; color: var(--accent-cyan); font-weight: 700;
+  }
+
+  .patient-arm-container { height: 160px; background: radial-gradient(circle, rgba(0, 242, 254, 0.05) 0%, rgba(0, 0, 0, 0) 70%); display: flex; align-items: center; justify-content: center; position: relative; }
+  .skin-arm { width: 170px; height: 70px; background: linear-gradient(90deg, #d4a373, #faedcd); border-radius: 35px 0 0 35px; position: relative; box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5); display: flex; align-items: center; justify-content: center; }
+  .wristband { position: absolute; left: 15px; width: 120px; background: #ffffff; color: #111; padding: 6px; border-radius: 8px; box-shadow: 0 0 15px rgba(255, 255, 255, 0.8); border-left: 4px solid var(--accent-blue); transform: rotate(-4deg); }
+  .wb-header { display: flex; justify-content: space-between; font-size: 7px; font-weight: 800; color: #555; margin-bottom: 2px; }
+  .wb-body { font-size: 8px; }
+  .wb-field .lbl { color: #666; }
+  .wb-field .val { color: #000; font-weight: 800; }
+  .wb-row { display: flex; justify-content: space-between; margin-top: 1px; }
+  .wb-barcode { margin-top: 3px; text-align: center; }
+  .b-lines { height: 10px; background: repeating-linear-gradient(90deg, #000, #000 2px, #fff 2px, #fff 4px); }
+  .b-code { font-size: 5px; color: #333; }
+
+  .bedside-prescription-box {
+    margin-top: 8px; background: rgba(255, 255, 255, 0.03); border: 1px solid var(--glass-border); border-radius: 12px; padding: 10px;
+  }
+  .bp-title { font-size: 11px; color: var(--accent-orange); margin-bottom: 6px; font-weight: 700; display: flex; align-items: center; gap: 5px; }
+  .checklist-item {
+    display: flex; justify-content: space-between; align-items: center;
+    background: rgba(255, 255, 255, 0.02); padding: 5px 8px; border-radius: 8px; margin-bottom: 4px; font-size: 10px; border: 1px solid var(--glass-border);
+  }
+  .checklist-item span strong { color: var(--accent-cyan); }
+  .check-btns { display: flex; gap: 4px; }
+  .chk-btn {
+    width: 24px; height: 24px; border-radius: 6px; border: 1px solid var(--glass-border); background: rgba(255,255,255,0.05); color: var(--text-muted);
+    cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 9px; transition: all 0.2s;
+  }
+  .chk-btn.yes.active { background: var(--accent-green); color: #000; border-color: var(--accent-green); }
+  .chk-btn.no.active { background: var(--accent-red); color: #fff; border-color: var(--accent-red); }
+
+  .sim-progress-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; font-size: 11px; color: var(--accent-cyan); font-weight: 700; }
+  .timer-banner { display: flex; justify-content: space-between; align-items: center; background: rgba(255, 61, 113, 0.1); border: 1px solid rgba(255, 61, 113, 0.3); padding: 5px 10px; border-radius: 8px; margin-bottom: 8px; }
+  .timer-info { display: flex; align-items: center; gap: 5px; font-size: 10px; color: var(--accent-red); }
+  .timer-badge { font-size: 16px; font-weight: 900; color: var(--accent-red); }
+
+  .system-card { background: rgba(255, 255, 255, 0.03); border: 1px solid var(--glass-border); border-radius: 10px; padding: 8px; }
+  .patient-sys-header { display: flex; align-items: center; gap: 6px; padding-bottom: 6px; border-bottom: 1px solid var(--glass-border); }
+  .sys-avatar { width: 26px; height: 26px; background: var(--accent-blue); border-radius: 5px; display: flex; align-items: center; justify-content: center; color: #000; font-size: 12px; }
+  .sys-p-info h3 { font-size: 12px; color: #fff; }
+  .sys-p-info p { font-size: 9px; color: var(--text-muted); }
+
+  .med-details-box { margin-top: 6px; display: flex; flex-direction: column; gap: 4px; }
+  .med-row { display: flex; justify-content: space-between; font-size: 10px; }
+  .m-label { color: var(--text-muted); }
+  .m-val { font-weight: 700; color: #fff; }
+  .m-val.highlight { color: var(--accent-cyan); }
+
+  /* Manual Decision Buttons (Phase 1) */
+  .manual-decision-box { margin-top: 12px; }
+  .manual-btns { display: flex; gap: 6px; }
+  .btn-man {
+    flex: 1; padding: 10px 4px; border-radius: 8px; border: none; font-weight: 800; font-size: 10px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center; gap: 4px;
+  }
+  .btn-man-match { background: rgba(0, 230, 118, 0.15); border: 1px solid var(--accent-green); color: var(--accent-green); }
+  .btn-man-mismatch { background: rgba(255, 61, 113, 0.15); border: 1px solid var(--accent-red); color: var(--accent-red); }
+
+  /* Scan Trigger Button (Phase 2) */
+  .scan-action-box { margin-top: 12px; text-align: center; display: none; }
+  .btn-scan-trigger {
+    width: 100%; padding: 12px; border-radius: 12px; border: none; font-weight: 900; font-size: 13px; cursor: pointer;
+    background: linear-gradient(135deg, var(--accent-cyan), var(--accent-blue)); color: #000;
+    box-shadow: 0 0 20px rgba(0, 242, 254, 0.4); display: flex; align-items: center; justify-content: center; gap: 8px;
+    transition: all 0.3s;
+  }
+  .btn-scan-trigger:hover { transform: scale(1.02); box-shadow: 0 0 30px rgba(0, 242, 254, 0.7); }
+
+  /* Notification Glow Screen Modal */
+  .scan-result-overlay {
+    position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(7, 11, 18, 0.92);
+    display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 10; text-align: center; padding: 20px;
+  }
+  .scan-result-overlay.success { border: 4px solid var(--accent-green); box-shadow: inset 0 0 50px rgba(0, 230, 118, 0.3); }
+  .scan-result-overlay.error { border: 4px solid var(--accent-red); box-shadow: inset 0 0 50px rgba(255, 61, 113, 0.3); }
+  .scan-res-icon { font-size: 50px; margin-bottom: 15px; }
+  .success .scan-res-icon { color: var(--accent-green); }
+  .error .scan-res-icon { color: var(--accent-red); }
+  .scan-res-title { font-size: 22px; font-weight: 900; color: #fff; margin-bottom: 8px; }
+  .scan-res-desc { font-size: 14px; color: var(--text-muted); margin-bottom: 20px; max-width: 500px; }
+
+  /* Transition Banner Modal */
+  .transition-modal {
+    position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(7, 11, 18, 0.95);
+    display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 20; text-align: center; padding: 30px;
+  }
+  .transition-modal h2 { font-size: 26px; color: var(--accent-cyan); margin-bottom: 15px; }
+  .transition-modal p { font-size: 15px; color: var(--text-muted); margin-bottom: 25px; max-width: 600px; line-height: 1.6; }
+
+  /* Dashboard Page 4 */
+  .dashboard-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px; }
+  .score-card { background: rgba(255, 255, 255, 0.03); border: 1px solid var(--glass-border); border-radius: 16px; padding: 16px; text-align: center; display: flex; flex-direction: column; justify-content: center; align-items: center; }
+  .score-circle { width: 90px; height: 90px; border-radius: 50%; border: 4px solid var(--accent-cyan); display: flex; align-items: center; justify-content: center; font-size: 24px; font-weight: 900; color: var(--accent-cyan); margin-bottom: 10px; box-shadow: 0 0 20px rgba(0,242,254,0.3); }
+  .grade-badge { background: rgba(0, 230, 118, 0.2); color: var(--accent-green); padding: 4px 12px; border-radius: 12px; font-weight: 800; font-size: 13px; border: 1px solid var(--accent-green); }
+  
+  .recs-card { background: rgba(255, 255, 255, 0.02); border: 1px solid var(--glass-border); border-radius: 16px; padding: 15px; text-align: left; }
+  .recs-card h4 { font-size: 13px; color: var(--accent-orange); margin-bottom: 8px; }
+  .recs-card ul { list-style: none; display: flex; flex-direction: column; gap: 6px; }
+  .recs-card li { font-size: 11px; color: var(--text-main); display: flex; align-items: center; gap: 6px; }
+
+  .btn-primary {
+    display: inline-flex; align-items: center; justify-content: center; gap: 10px; padding: 12px 28px;
+    background: linear-gradient(135deg, var(--accent-cyan), var(--accent-blue)); border: none; border-radius: 14px;
+    color: #000; font-size: 14px; font-weight: 800; cursor: pointer; box-shadow: 0 8px 20px rgba(0, 242, 254, 0.3);
+    transition: all 0.3s ease; width: 100%;
+  }
+  .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 12px 25px rgba(0, 242, 254, 0.5); }
+  .btn-accent { background: linear-gradient(135deg, var(--accent-green), #00b0ff); }
+
+  @media (max-width: 850px) { .split-view, .dashboard-grid { grid-template-columns: 1fr; } }
+</style>
+
+<div class="app-container">
+  <div class="glow-orb orb-1"></div>
+  <div class="glow-orb orb-2"></div>
+
+  <header class="app-header">
+    <div class="brand">
+      <div class="brand-icon"><i class="fas fa-shield-virus"></i></div>
+      <div class="brand-text">
+        <h1>Safe Dose <span>System</span></h1>
+        <p>Version 1.2.0.1</p>
+      </div>
+    </div>
+    <div class="system-status">
+      <span class="pulse-dot"></span>
+      <span class="status-text" id="status-text">WELCOME SCREEN</span>
+    </div>
+  </header>
+
+  <!-- الصفحة الأولى -->
+  <section id="page-1" class="screen-card active">
+    <div class="single-col" style="text-align: center;">
+      <div class="hero-icon-wrapper"><i class="fas fa-microchip hero-icon"></i></div>
+      <h2>Welcome to Safe Dose System Version 1.2.0.1</h2>
+      <p class="hero-subtitle">Smart Digital Verification System for Medical Doses & Patient Safety<br>(BCMA Protocol - Bar Code Medication Administration)</p>
+      <div class="features-grid">
+        <div class="f-item"><i class="fas fa-check-circle"></i> 10 Closed-Loop Scenarios</div>
+        <div class="f-item"><i class="fas fa-bolt"></i> Manual vs. Scan-Trigger Mode</div>
+        <div class="f-item"><i class="fas fa-user-shield"></i> Error-Free Patient Care</div>
+      </div>
+      <button class="btn-primary" onclick="goToPage(2)" style="width: auto; margin: 0 auto;">
+        <span>Click to Continue</span> <i class="fas fa-arrow-right"></i>
+      </button>
+    </div>
+  </section>
+
+  <!-- الصفحة الثانية -->
+  <section id="page-2" class="screen-card">
+    <div class="single-col">
+      <div class="instruction-badge"><i class="fas fa-user-nurse"></i> Comparative Training Workflow</div>
+      <h2>Dual-Phase Clinical Simulation Brief (10 Cases Total)</h2>
+      <p class="hero-subtitle">You are about to experience two distinct operational testing phases:</p>
+      <div class="rules-list">
+        <div class="rule-box">
+          <div class="r-num">01</div>
+          <div class="r-txt"><strong>Phase 1 (Scenarios 1-5):</strong> Traditional manual audit using individual checklist verification (Medication, Dosage, Time).</div>
+        </div>
+        <div class="rule-box">
+          <div class="r-num">02</div>
+          <div class="r-txt"><strong>Phase 2 (Scenarios 6-10):</strong> Advanced <strong>SafeDose BCMA System</strong> featuring automated Scan-Trigger verification & instant clearance.</div>
+        </div>
+        <div class="rule-box warning-box">
+          <div class="r-num"><i class="fas fa-exclamation-triangle"></i></div>
+          <div class="r-txt"><strong>15-Second Timer:</strong> Speed and precision are monitored across both phases for executive reporting.</div>
+        </div>
+      </div>
+      <button class="btn-primary btn-accent" onclick="startFullSimulation()">
+        <span>Start Dual-Phase Test</span> <i class="fas fa-play"></i>
+      </button>
+    </div>
+  </section>
+
+  <!-- الصفحة الثالثة: المحاكاة المدمجة للمرحلتين -->
+  <section id="page-3" class="screen-card">
+    
+    <!-- فاصل الانتقال بين المرحلة الأولى والثانية -->
+    <div id="transition-modal-box" class="transition-modal">
+      <h2><i class="fas fa-sync-alt fa-spin"></i> Phase 1 Completed: Switching to SafeDose BCMA System</h2>
+      <p>You have finished the manual audit phase. Now entering <strong>Phase 2 (Scenarios 6-10)</strong> where automated Barcode Scanning (Scan-Trigger) is enabled to instantly verify and clear doses.</p>
+      <button class="btn-primary" onclick="resumePhase2()" style="width: auto; margin: 0 auto;">Start Phase 2 (Smart System) <i class="fas fa-arrow-right"></i></button>
+    </div>
+
+    <!-- شاشة الإضاءة والنتيجة لـ المرحلة الثانية -->
+    <div id="scan-result-modal" class="scan-result-overlay">
+      <div id="scan-modal-icon" class="scan-res-icon"><i class="fas fa-check-circle"></i></div>
+      <div id="scan-modal-title" class="scan-res-title">Confirm & Clear - Give Doses</div>
+      <div id="scan-modal-desc" class="scan-res-desc">System match verified successfully. Proceeding to next case.</div>
+      <button class="btn-primary" onclick="proceedNextScenario()" style="width: auto; margin: 0 auto;">Next Case <i class="fas fa-arrow-right"></i></button>
+    </div>
+
+    <div class="sim-progress-bar">
+      <span id="scenario-counter">Scenario 1 of 10</span>
+      <span id="phase-badge" style="color: var(--accent-cyan);">Phase 1: Manual Audit Mode</span>
+    </div>
+
+    <div class="split-view">
+      <!-- القسم الأيمن: الأسورة والساعة -->
+      <div class="view-panel">
+        <div class="panel-tag"><i class="fas fa-eye"></i> Bedside View & Real-time Clock</div>
+        
+        <div class="live-clock-badge">
+          <span><i class="fas fa-clock"></i> Bedside Real-time Clock:</span>
+          <strong id="live-clock-time" style="color: var(--accent-cyan);">07:00 PM</strong>
+        </div>
+
+        <div class="patient-arm-container">
+          <div class="skin-arm">
+            <div class="wristband">
+              <div class="wb-header">
+                <span>SAFEDOSE HOSPITAL</span>
+                <i class="fas fa-qrcode"></i>
+              </div>
+              <div class="wb-body">
+                <div class="wb-field">
+                  <span class="lbl">Name:</span>
+                  <strong id="wb-name" class="val">Mohamed Ahmed</strong>
+                </div>
+                <div class="wb-row">
+                  <div class="wb-field"><span class="lbl">ID:</span> <strong id="wb-id" class="val">PID-001</strong></div>
+                  <div class="wb-field"><span class="lbl">Age:</span> <strong id="wb-age" class="val">17y</strong></div>
+                </div>
+              </div>
+              <div class="wb-barcode">
+                <div class="b-lines"></div>
+                <span class="b-code" id="wb-barcode-text">*PID-001*</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- قسم التدقيق الفردي يظهر فقط في المرحلة الأولى (1-5) -->
+        <div id="manual-checklist-section" class="bedside-prescription-box">
+          <div class="bp-title"><i class="fas fa-clipboard-check"></i> Manual Audit Checklist (Phase 1):</div>
+          
+          <div class="checklist-item">
+            <span>Med: <strong id="chk-med-label">Paracetamol 500mg</strong></span>
+            <div class="check-btns">
+              <button class="chk-btn yes" id="chk-med-y" onclick="toggleCheck('med', true)"><i class="fas fa-check"></i></button>
+              <button class="chk-btn no" id="chk-med-n" onclick="toggleCheck('med', false)"><i class="fas fa-times"></i></button>
+            </div>
+          </div>
+
+          <div class="checklist-item">
+            <span>Dose: <strong id="chk-dose-label">500mg</strong></span>
+            <div class="check-btns">
+              <button class="chk-btn yes" id="chk-dose-y" onclick="toggleCheck('dose', true)"><i class="fas fa-check"></i></button>
+              <button class="chk-btn no" id="chk-dose-n" onclick="toggleCheck('dose', false)"><i class="fas fa-times"></i></button>
+            </div>
+          </div>
+
+          <div class="checklist-item">
+            <span>Time: <strong id="chk-time-label">07:00 PM</strong></span>
+            <div class="check-btns">
+              <button class="chk-btn yes" id="chk-time-y" onclick="toggleCheck('time', true)"><i class="fas fa-check"></i></button>
+              <button class="chk-btn no" id="chk-time-n" onclick="toggleCheck('time', false)"><i class="fas fa-times"></i></button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- القسم الأيسر: الآيباد وأزرار القرار اليدوي أو زر السكان -->
+      <div class="view-panel">
+        <div class="panel-tag"><i class="fas fa-tablet-alt"></i> SafeDose App Interface</div>
+        
+        <div class="timer-banner">
+          <div class="timer-info"><i class="fas fa-hourglass-half"></i><span>Time Remaining (15s):</span></div>
+          <div class="timer-badge" id="timer-display">15</div>
+        </div>
+
+        <div class="system-card">
+          <div class="patient-sys-header">
+            <div class="sys-avatar"><i class="fas fa-hospital-user"></i></div>
+            <div class="sys-p-info">
+              <h3 id="sys-name">Mohamed Ahmed</h3>
+              <p>ID: <span id="sys-id">PID-001</span> | Age: <span id="sys-age">17</span>y</p>
+            </div>
+          </div>
+          <div class="med-details-box">
+            <div class="med-row">
+              <span class="m-label">Prescribed Med:</span>
+              <span class="m-val highlight" id="sys-med">Paracetamol 500mg</span>
+            </div>
+            <div class="med-row">
+              <span class="m-label">Route & Time:</span>
+              <span class="m-val" id="sys-route">Oral | 07:00 PM</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- أزرار القرار للمرحلة الأولى (اليدوي) -->
+        <div id="manual-decision-section" class="manual-decision-box">
+          <p class="q-title"><i class="fas fa-question-circle"></i> Manual Decision (Phase 1):</p>
+          <div class="manual-btns">
+            <button class="btn-man btn-man-match" onclick="submitManualAnswer(true)">
+              <i class="fas fa-check-circle"></i> Confirm Match
+            </button>
+            <button class="btn-man btn-man-mismatch" onclick="submitManualAnswer(false)">
+              <i class="fas fa-exclamation-triangle"></i> Flag Mismatch
+            </button>
+          </div>
+        </div>
+
+        <!-- زر السكان للمرحلة الثانية (النظام الجديد) -->
+        <div id="scan-action-section" class="scan-action-box">
+          <p class="q-title" style="color: var(--accent-cyan);"><i class="fas fa-bolt"></i> Smart System Active (Phase 2):</p>
+          <button class="btn-scan-trigger" onclick="triggerScanMatch()">
+            <i class="fas fa-barcode"></i> Scan & Match (Execute System Verification)
+          </button>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- الصفحة الرابعة: الداشبورد -->
+  <section id="page-4" class="screen-card">
+    <div class="single-col" style="max-width: 900px;">
+      <div class="instruction-badge" style="background: rgba(0, 230, 118, 0.1); border-color: var(--accent-green); color: var(--accent-green);">
+        <i class="fas fa-chart-line"></i> Dual-Phase Comparative Dashboard
+      </div>
+      <h2>Simulation Results & Comparative Analysis</h2>
+      
+      <div class="dashboard-grid">
+        <div class="score-card">
+          <div class="score-circle" id="final-score-val">100%</div>
+          <div class="grade-badge" id="final-grade-badge">EXCELLENT (امتياز)</div>
+          <p style="font-size: 12px; color: var(--text-muted); margin-top: 10px;">Based on 10 Dual-Phase Scenarios</p>
+        </div>
+
+        <div class="recs-card">
+          <h4><i class="fas fa-lightbulb"></i> Executive Summary & Recommendations:</h4>
+          <ul>
+            <li><i class="fas fa-shield-alt" style="color:var(--accent-cyan)"></i> <strong>Phase Efficiency:</strong> Transitioning from manual to BCMA scan-trigger eliminates 95% of human error.</li>
+            <li><i class="fas fa-eye" style="color:var(--accent-cyan)"></i> <strong>Time Reduction:</strong> Automated scanning cuts nurse verification time from 3 mins to under 15 seconds.</li>
+            <li><i class="fas fa-tachometer-alt" style="color:var(--accent-cyan)"></i> <strong>Board Adoption:</strong> Recommending full hospital rollout of SafeDose for patient safety compliance.</li>
+          </ul>
+        </div>
+      </div>
+
+      <button class="btn-primary" onclick="startFullSimulation()">
+        <span>Restart Dual-Phase Test</span> <i class="fas fa-redo"></i>
+      </button>
+    </div>
+  </section>
+
+</div>
+
+<script>
+  let currentScenarioIndex = 0;
+  let score = 0;
+  let timer = 15;
+  let timerInterval = null;
+  let userChecks = { med: null, dose: null, time: null };
+
+  // 10 حالات: (1-5 نظام يدوي تقليدي) و (6-10 نظام سكان الجديد)
+  const scenarios10 = [
+    // Phase 1: Manual (1 to 5)
+    { id: 1, phase: 1, isMatch: true, clock: "07:00 PM", wb: { name: "Mohamed Ahmed", id: "PID-001", age: "17" }, sys: { name: "Mohamed Ahmed", id: "PID-001", age: "17", med: "Paracetamol 500mg", dose: "500mg", time: "07:00 PM", route: "Oral | 07:00 PM" } },
+    { id: 2, phase: 1, isMatch: false, clock: "07:15 PM", wb: { name: "Mohamed Ahmed", id: "PID-001", age: "17" }, sys: { name: "Mohamed Ahmed", id: "PID-002", age: "17", med: "Paracetamol 500mg", dose: "500mg", time: "07:00 PM", route: "Oral | 07:00 PM" } },
+    { id: 3, phase: 1, isMatch: true, clock: "08:00 PM", wb: { name: "Sara Khalid", id: "PID-088", age: "34" }, sys: { name: "Sara Khalid", id: "PID-088", age: "34", med: "Ceftriaxone 1g", dose: "1g", time: "08:00 PM", route: "IV | 08:00 PM" } },
+    { id: 4, phase: 1, isMatch: false, clock: "09:00 PM", wb: { name: "Fahad Al-Shehri", id: "PID-104", age: "42" }, sys: { name: "Fahad Al-Ghamdi", id: "PID-104", age: "42", med: "Insulin Glargine", dose: "10 units", time: "09:00 PM", route: "SC | 09:00 PM" } },
+    { id: 5, phase: 1, isMatch: true, clock: "08:00 AM", wb: { name: "Nouf Abdullah", id: "PID-210", age: "29" }, sys: { name: "Nouf Abdullah", id: "PID-210", age: "29", med: "Omeprazole 40mg", dose: "40mg", time: "08:00 AM", route: "Oral | 08:00 AM" } },
+    
+    // Phase 2: Smart Scan-Trigger (6 to 10)
+    { id: 6, phase: 2, isMatch: false, clock: "02:30 PM", wb: { name: "Sultan Al-Harbi", id: "PID-312", age: "51" }, sys: { name: "Sultan Al-Harbi", id: "PID-312", age: "51", med: "Morphine 20mg", dose: "20mg (Error)", time: "Stat", route: "IV | Stat" } },
+    { id: 7, phase: 2, isMatch: true, clock: "09:00 AM", wb: { name: "Reem Al-Otaibi", id: "PID-415", age: "23" }, sys: { name: "Reem Al-Otaibi", id: "PID-415", age: "23", med: "Amlodipine 5mg", dose: "5mg", time: "09:00 AM", route: "Oral | 09:00 AM" } },
+    { id: 8, phase: 2, isMatch: false, clock: "10:00 PM", wb: { name: "Ibrahim Nasser", id: "PID-509", age: "60" }, sys: { name: "Ibrahim Nasser", id: "PID-509", age: "60", med: "Salbutamol Inhaler", dose: "1 Puff", time: "10:00 PM", route: "Oral (Error)" } },
+    { id: 9, phase: 2, isMatch: true, clock: "06:00 PM", wb: { name: "Amal Al-Dosari", id: "PID-602", age: "38" }, sys: { name: "Amal Al-Dosari", id: "PID-602", age: "38", med: "Enoxaparin 40mg", dose: "40mg", time: "06:00 PM", route: "SC | 06:00 PM" } },
+    { id: 10, phase: 2, isMatch: false, clock: "08:00 PM", wb: { name: "Turki Al-Mutairi", id: "PID-711", age: "45" }, sys: { name: "Turki Al-Mutairi", id: "PID-712", age: "55", med: "Metformin 850mg", dose: "850mg", time: "08:00 PM", route: "Oral | 08:00 PM" } }
+  ];
+
+  function goToPage(pageNumber) {
+    document.querySelectorAll('.screen-card').forEach(card => card.classList.remove('active'));
+    document.getElementById(`page-${pageNumber}`).classList.add('active');
+    
+    const statusText = document.getElementById('status-text');
+    if (pageNumber === 2) statusText.innerText = "TRAINING BRIEF";
+    if (pageNumber === 3) statusText.innerText = "DUAL-PHASE TEST";
+    if (pageNumber === 4) statusText.innerText = "EXECUTIVE DASHBOARD";
+  }
+
+  function startFullSimulation() {
+    currentScenarioIndex = 0;
+    score = 0;
+    goToPage(3);
+    loadScenario(currentScenarioIndex);
+  }
+
+  function loadScenario(index) {
+    const sc = scenarios10[index];
+    document.getElementById('scenario-counter').innerText = `Scenario ${index + 1} of 10`;
+
+    // التحقق مما إذا كنا سننتقل للمرحلة الثانية (الحالة رقم 6)
+    if (index === 5) {
+      clearInterval(timerInterval);
+      document.getElementById('transition-modal-box').style.display = 'flex';
+      return;
+    }
+
+    setupPhaseUI(sc);
+  }
+
+  function resumePhase2() {
+    document.getElementById('transition-modal-box').style.display = 'none';
+    setupPhaseUI(scenarios10[currentScenarioIndex]);
+  }
+
+  function setupPhaseUI(sc) {
+    const phaseBadge = document.getElementById('phase-badge');
+    const manualChecklist = document.getElementById('manual-checklist-section');
+    const manualDecision = document.getElementById('manual-decision-section');
+    const scanAction = document.getElementById('scan-action-section');
+
+    document.getElementById('scan-result-modal').style.display = 'none';
+
+    if (sc.phase === 1) {
+      phaseBadge.innerText = "Phase 1: Manual Audit Mode (Scenarios 1-5)";
+      phaseBadge.style.color = "var(--accent-cyan)";
+      manualChecklist.style.display = "block";
+      manualDecision.style.display = "block";
+      scanAction.style.display = "none";
+    } else {
+      phaseBadge.innerText = "Phase 2: SafeDose BCMA Smart System (Scenarios 6-10)";
+      phaseBadge.style.color = "var(--accent-green)";
+      manualChecklist.style.display = "none";
+      manualDecision.style.display = "none";
+      scanAction.style.display = "block";
+    }
+
+    document.getElementById('live-clock-time').innerText = sc.clock;
+
+    // Reset checks
+    userChecks = { med: null, dose: null, time: null };
+    document.querySelectorAll('.chk-btn').forEach(btn => btn.classList.remove('active'));
+
+    // Wristband
+    document.getElementById('wb-name').innerText = sc.wb.name;
+    document.getElementById('wb-id').innerText = sc.wb.id;
+    document.getElementById('wb-age').innerText = sc.wb.age + "y";
+    document.getElementById('wb-barcode-text').innerText = `*${sc.wb.id}*`;
+
+    // System
+    document.getElementById('sys-name').innerText = sc.sys.name;
+    document.getElementById('sys-id').innerText = sc.sys.id;
+    document.getElementById('sys-age').innerText = sc.sys.age;
+    document.getElementById('sys-med').innerText = sc.sys.med;
+    document.getElementById('sys-route').innerText = sc.sys.route;
+
+    document.getElementById('chk-med-label').innerText = sc.sys.med;
+    document.getElementById('chk-dose-label').innerText = sc.sys.dose;
+    document.getElementById('chk-time-label').innerText = sc.clock;
+
+    // Reset Timer (15 ثانية)
+    timer = 15;
+    document.getElementById('timer-display').innerText = timer;
+    document.getElementById('timer-display').style.color = "var(--accent-red)";
+    clearInterval(timerInterval);
+    timerInterval = setInterval(() => {
+      timer--;
+      document.getElementById('timer-display').innerText = timer;
+    }, 1000);
+  }
+
+  function toggleCheck(type, isYes) {
+    userChecks[type] = isYes;
+    document.getElementById(`chk-${type}-y`).classList.toggle('active', isYes === true);
+    document.getElementById(`chk-${type}-n`).classList.toggle('active', isYes === false);
+  }
+
+  // Phase 1: Manual Answer
+  function submitManualAnswer(userChoice) {
+    clearInterval(timerInterval);
+    const sc = scenarios10[currentScenarioIndex];
+    if (userChoice === sc.isMatch) {
+      score += 10; 
+    }
+    proceedNextScenario();
+  }
+
+  // Phase 2: Smart Scan-Trigger Answer
+  function triggerScanMatch() {
+    clearInterval(timerInterval);
+    const sc = scenarios10[currentScenarioIndex];
+    
+    if (sc.isMatch) {
+      score += 10; 
+    }
+
+    const modal = document.getElementById('scan-result-modal');
+    const mIcon = document.getElementById('scan-modal-icon');
+    const mTitle = document.getElementById('scan-modal-title');
+    const mDesc = document.getElementById('scan-modal-desc');
+
+    modal.style.display = 'flex';
+
+    if (sc.isMatch) {
+      modal.className = "scan-result-overlay success";
+      mIcon.innerHTML = '<i class="fas fa-check-circle"></i>';
+      mTitle.innerText = "Confirm & Clear - Give Doses";
+      mDesc.innerText = "System match verified successfully via Barcode. Dose authorized and logged.";
+    } else {
+      modal.className = "scan-result-overlay error";
+      mIcon.innerHTML = '<i class="fas fa-exclamation-triangle"></i>';
+      mTitle.innerText = "Mismatch Warning - Administration Blocked!";
+      mDesc.innerText = "SafeDose detected data discrepancy. Medication blocked for patient safety.";
+    }
+  }
+
+  function proceedNextScenario() {
+    currentScenarioIndex++;
+    if (currentScenarioIndex < scenarios10.length) {
+      loadScenario(currentScenarioIndex);
+    } else {
+      showDashboard();
+    }
+  }
+
+  function showDashboard() {
+    goToPage(4);
+    document.getElementById('final-score-val').innerText = `${score}%`;
+    
+    const badge = document.getElementById('final-grade-badge');
+    if (score >= 90) {
+      badge.innerText = "EXCELLENT (امتياز)";
+      badge.style.background = "rgba(0, 230, 118, 0.2)";
+      badge.style.color = "var(--accent-green)";
+      badge.style.borderColor = "var(--accent-green)";
+    } else if (score >= 75) {
+      badge.innerText = "VERY GOOD (جيد جداً)";
+      badge.style.background = "rgba(0, 242, 254, 0.2)";
+      badge.style.color = "var(--accent-cyan)";
+      badge.style.borderColor = "var(--accent-cyan)";
+    } else if (score >= 60) {
+      badge.innerText = "GOOD (جيد)";
+      badge.style.background = "rgba(255, 170, 0, 0.2)";
+      badge.style.color = "var(--accent-orange)";
+      badge.style.borderColor = "var(--accent-orange)";
+    } else {
+      badge.innerText = "RE-TRAINING REQUIRED (يحتاج إعادة تدريب)";
+      badge.style.background = "rgba(255, 61, 113, 0.2)";
+      badge.style.color = "var(--accent-red)";
+      badge.style.borderColor = "var(--accent-red)";
+    }
+  }
+</script>
